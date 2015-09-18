@@ -1,17 +1,10 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    highlight: pygments
-    keep_md: yes
-    theme: readable
-    toc: yes
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 Load data from `activity.csv` - if not present in working directory, unzip `activity.zip`. If neither are present or unzipping fails, throw an error.
-```{r loadData, echo=TRUE, cache=TRUE}
+
+```r
 if (!file.exists('activity.csv')) {
     # CSV is not in the working directory - unzip if possible
     if (!file.exists('activity.zip')) {
@@ -34,26 +27,27 @@ if (!file.exists('activity.csv')) {
 activity <- read.csv('activity.csv',stringsAsFactors=FALSE)
 ```
 
-Preprocess by converting string dates and integer times to POSIXct dates and datetimes. Additional columns are calculated for weekday and hour. This step requires the [Lubridate][Lubridate] and [dplyr][dplyr] packages. If not present, install using `install.packages()`. Lubridate requires R Version >= 3.0.0 and dplyr requires R version >= 3.1.2 - This document was knitted using `r R.version.string`.
-```{r preprocess, echo=TRUE, cache=TRUE, dependson=loadData}
-if (!require(lubridate) || !require(dplyr)) {
-    stop('Lubridate or dplyr package is not installed')
-}
+Preprocess by converting string dates and integer times to POSIXct datetimes. This step requires the [Lubridate][Lubridate] package. If not present, install it using `install.packages('lubridate')`. Lubridate requires R Version >= 3.0.0 - This document was knitted on R version 3.2.1 (2015-06-18).
 
-activity$datetime <- ymd_hm(paste(activity$date,
-    formatC(activity$interval, width=4, flag='0', format='d')
-    ))
-activity$date <- ymd(activity$date)
-activity$weekday <- wday(activity$datetime, label = TRUE)
+```r
+if (!require(lubridate)) {
+    stop('Lubridate package not installed')
+}
+```
+
+```
+## Loading required package: lubridate
+```
+
+```r
+activity$ymdhm <- paste(activity$date,formatC(x=activity$interval,width=4,flag='0',format='d'))
+activity$datetime <- ymd_hm(activity$ymdhm)
 ```
 
 
 
 
 ## What is mean total number of steps taken per day?
-```{r, echo=TRUE, dependson=preprocess}
-
-```
 
 
 
@@ -69,5 +63,4 @@ activity$weekday <- wday(activity$datetime, label = TRUE)
 
 
 ## References
-1. [Lubridate][Lubridate] 
 [Lubridate]: https://cran.r-project.org/package=lubridate "Lubridate package at CRAN"
