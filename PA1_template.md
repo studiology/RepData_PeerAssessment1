@@ -30,31 +30,12 @@ activity <- read.csv('activity.csv',stringsAsFactors=FALSE)
 Preprocess by converting string dates and integer times to POSIXct dates and datetimes. Additional columns are calculated for weekday and hour. This step requires the [Lubridate][Lubridate] and [dplyr][dplyr] packages. If not present, install using `install.packages()`. Lubridate requires R Version >= 3.0.0 and dplyr requires R version >= 3.1.2 - This document was knitted using R version 3.2.1 (2015-06-18).
 
 ```r
-if (!require(lubridate) || !require(dplyr)) {
+suppressPackageStartupMessages(
+    if (!require(lubridate) || !require(dplyr)){
     stop('Lubridate or dplyr package is not installed')
 }
-```
+)
 
-```
-## Loading required package: lubridate
-## Loading required package: dplyr
-## 
-## Attaching package: 'dplyr'
-## 
-## The following objects are masked from 'package:lubridate':
-## 
-##     intersect, setdiff, union
-## 
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-## 
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
 activity$datetime <- ymd_hm(paste(activity$date,
     formatC(activity$interval, width=4, flag='0', format='d')
     ))
@@ -77,6 +58,20 @@ hist(dailyActivity$dailySteps, labels=TRUE)
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-1-1.png) 
+
+```r
+summary(dailyActivity)
+```
+
+```
+##       date              dailySteps   
+##  Min.   :2012-10-01   Min.   :    0  
+##  1st Qu.:2012-10-16   1st Qu.: 6778  
+##  Median :2012-10-31   Median :10395  
+##  Mean   :2012-10-31   Mean   : 9354  
+##  3rd Qu.:2012-11-15   3rd Qu.:12811  
+##  Max.   :2012-11-30   Max.   :21194
+```
 
 
 

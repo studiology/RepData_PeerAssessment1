@@ -36,9 +36,11 @@ activity <- read.csv('activity.csv',stringsAsFactors=FALSE)
 
 Preprocess by converting string dates and integer times to POSIXct dates and datetimes. Additional columns are calculated for weekday and hour. This step requires the [Lubridate][Lubridate] and [dplyr][dplyr] packages. If not present, install using `install.packages()`. Lubridate requires R Version >= 3.0.0 and dplyr requires R version >= 3.1.2 - This document was knitted using `r R.version.string`.
 ```{r preprocess, echo=TRUE}
-if (!require(lubridate) || !require(dplyr)) {
+suppressPackageStartupMessages(
+    if (!require(lubridate) || !require(dplyr)){
     stop('Lubridate or dplyr package is not installed')
 }
+)
 
 activity$datetime <- ymd_hm(paste(activity$date,
     formatC(activity$interval, width=4, flag='0', format='d')
@@ -59,6 +61,7 @@ dailyActivity <- activity %>%
 
 hist(dailyActivity$dailySteps, labels=TRUE)
 
+summary(dailyActivity)
 ```
 
 
