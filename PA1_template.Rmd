@@ -11,7 +11,7 @@ output:
 
 ## Loading and preprocessing the data
 Load data from `activity.csv` - if not present in working directory, unzip `activity.zip`. If neither are present or unzipping fails, throw an error.
-```{r loadData, echo=TRUE, cache=TRUE}
+```{r loadData, echo=TRUE}
 if (!file.exists('activity.csv')) {
     # CSV is not in the working directory - unzip if possible
     if (!file.exists('activity.zip')) {
@@ -35,7 +35,7 @@ activity <- read.csv('activity.csv',stringsAsFactors=FALSE)
 ```
 
 Preprocess by converting string dates and integer times to POSIXct dates and datetimes. Additional columns are calculated for weekday and hour. This step requires the [Lubridate][Lubridate] and [dplyr][dplyr] packages. If not present, install using `install.packages()`. Lubridate requires R Version >= 3.0.0 and dplyr requires R version >= 3.1.2 - This document was knitted using `r R.version.string`.
-```{r preprocess, echo=TRUE, cache=TRUE, dependson=loadData}
+```{r preprocess, echo=TRUE}
 if (!require(lubridate) || !require(dplyr)) {
     stop('Lubridate or dplyr package is not installed')
 }
@@ -45,19 +45,34 @@ activity$datetime <- ymd_hm(paste(activity$date,
     ))
 activity$date <- ymd(activity$date)
 activity$weekday <- wday(activity$datetime, label = TRUE)
+activity$time <- hours(activity$interval%/%100) + minutes(activity$interval %% 100)
 ```
 
 
 
 
 ## What is mean total number of steps taken per day?
-```{r, echo=TRUE, dependson=preprocess}
+```{r, echo=TRUE}
+dailyActivity <- activity %>% 
+    group_by(date) %>% 
+    summarise(dailySteps = sum(steps, na.rm=TRUE))
+
+hist(dailyActivity$dailySteps, labels=TRUE)
 
 ```
 
 
 
 ## What is the average daily activity pattern?
+```{r, echo=TRUE}
+timeActivity <- activity %>% 
+    group_by(interval) %>%
+    summarise(
+        meanSteps = mean(steps, na.rm = TRUE),
+        medianSteps = median(steps, na.rm = TRUE)
+        )
+
+```
 
 
 
