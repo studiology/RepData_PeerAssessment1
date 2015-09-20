@@ -76,7 +76,7 @@ summary(dailyActivity)
 hist(dailyActivity$dailySteps, labels=TRUE)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
+![](PA1_template_files/figure-html/dailyStepHistogramIgnoreNA-1.png) 
 
 
 ```r
@@ -129,7 +129,7 @@ require(scales)
 qplot(x=ymd('20121001')+time, y=meanSteps, data=timeActivity,geom='line',xlab='time',ylab='mean steps') + scale_x_datetime(labels=date_format('%H:%M'))
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+![](PA1_template_files/figure-html/timeseries-1.png) 
 
 
 ```r
@@ -210,7 +210,7 @@ summary(dailyActivityImputed)
 hist(dailyActivityImputed$dailySteps, labels=TRUE)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-10-1.png) 
+![](PA1_template_files/figure-html/imputedDailyStepHistogram-1.png) 
 
 
 ```r
@@ -249,7 +249,7 @@ timeActivityImputed$time <-
 qplot(x=ymd('20121001')+time, y=meanSteps, data=timeActivityImputed,geom='line',xlab='time',ylab='mean steps',facets=weekday ~ .) + scale_x_datetime(labels=date_format('%H:%M'))
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-12-1.png) 
+![](PA1_template_files/figure-html/timeseriesWeekends-1.png) 
 
 [Lubridate]: https://cran.r-project.org/package=lubridate "Lubridate package at CRAN"
 [dplyr]: https://cran.r-project.org/package=dplyr "dplyr package at CRAN"
