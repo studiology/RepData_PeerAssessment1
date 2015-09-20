@@ -38,15 +38,19 @@ Preprocess by converting string dates and integer times to POSIXct dates and dat
 ```{r preprocess, echo=TRUE}
 suppressPackageStartupMessages(
     if (!require(lubridate) || !require(dplyr)){
-    stop('Lubridate or dplyr package is not installed')
-}
+        stop('Lubridate or dplyr package is not installed')
+    }
 )
 
 activity$datetime <- ymd_hm(paste(activity$date,
     formatC(activity$interval, width=4, flag='0', format='d')
     ))
 activity$date <- ymd(activity$date)
-activity$weekday <- wday(activity$datetime, label = TRUE)
+activity$day <- wday(activity$datetime, label = TRUE)
+activity$weekday <- 'weekday'
+activity$weekday[activity$day == 'Sun' | activity$day == 'Sat'] <- 'weekend'
+
+activity$weekday <- as.factor(activity$weekday)
 activity$time <- hours(activity$interval%/%100) + minutes(activity$interval %% 100)
 ```
 
@@ -59,11 +63,17 @@ dailyActivity <- activity %>%
     group_by(date) %>% 
     summarise(dailySteps = sum(steps, na.rm=TRUE))
 
-hist(dailyActivity$dailySteps, labels=TRUE)
-
 summary(dailyActivity)
 ```
 
+```{r, echo=TRUE}
+hist(dailyActivity$dailySteps, labels=TRUE)
+```
+
+```{r, echo=TRUE}
+mean(dailyActivity$dailySteps,na.rm=TRUE)
+median(dailyActivity$dailySteps,na.rm=TRUE)
+```
 
 
 ## What is the average daily activity pattern?
@@ -74,18 +84,81 @@ timeActivity <- activity %>%
         meanSteps = mean(steps, na.rm = TRUE),
         medianSteps = median(steps, na.rm = TRUE)
         )
+timeActivity$time <- hours(timeActivity$interval%/%100) + minutes(timeActivity$interval %% 100)
+```
+The following code uses the `ggplot2` and `scales` packages to plot the timeseries. `scales` is used to get access to the `scale_x_datetime` function used to format the time axis appropriately.
+```{r, echo=TRUE}
+require(ggplot2)
+require(scales)
+qplot(x=ymd('20121001')+time, y=meanSteps, data=timeActivity,geom='line',xlab='time',ylab='mean steps') + scale_x_datetime(labels=date_format('%H:%M'))
 
 ```
 
+```{r, echo=TRUE}
+timeActivity[which.max(timeActivity$meanSteps),'time']
+```
 
 
 ## Imputing missing values
 
+Total missing
+```{r, echo=TRUE}
+sum(is.na(activity$steps))
+```
+Total days entirely missing (ie. all intervals contain NA)
+```{r, echo=TRUE}
+activity %>% 
+    group_by(date) %>% 
+    summarise(missing=sum(is.na(steps)), intervals=n()) %>%
+    filter(missing>0) %>% 
+    arrange(desc(missing))
+
+```
+There are 8 days which have no steps recorded, and there are no days which are partially missing.
+So replacing `NA` with mean/median for that day will not work. Using the median for the time interval instead. May be useful to combine with day of week later on.
+```{r, echo=TRUE}
+activityImputed <- activity
+for (i in timeActivity$interval){
+    # TODO: replace this with sapply/lapply - or use a join from dplyr (or data.table)
+    replacement <- round(unlist(timeActivity[timeActivity$interval==i, 'medianSteps']))
+    activityImputed[is.na(activityImputed$steps) & activityImputed$interval == i,]$steps <- replacement
+}
+dailyActivityImputed <- activityImputed %>% 
+    group_by(date) %>% 
+    summarise(dailySteps = sum(steps))
+
+summary(dailyActivityImputed)
+
+
+```
+
+```{r, echo=TRUE}
+hist(dailyActivityImputed$dailySteps, labels=TRUE)
+```
+
+```{r, echo=TRUE}
+mean(dailyActivityImputed$dailySteps,na.rm=TRUE)
+median(dailyActivityImputed$dailySteps,na.rm=TRUE)
+```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
+```{r, echo=TRUE}
+timeActivityImputed <- activityImputed %>% 
+    group_by(weekday,interval) %>%
+    summarise(
+        meanSteps = mean(steps, na.rm = TRUE),
+        medianSteps = median(steps, na.rm = TRUE)
+        )
 
-## References
-1. [Lubridate][Lubridate] 
+timeActivityImputed$time <- 
+    hours(timeActivityImputed$interval%/%100) + 
+    minutes(timeActivityImputed$interval %% 100)
+
+
+qplot(x=ymd('20121001')+time, y=meanSteps, data=timeActivityImputed,geom='line',xlab='time',ylab='mean steps',facets=weekday ~ .) + scale_x_datetime(labels=date_format('%H:%M'))
+```
+
 [Lubridate]: https://cran.r-project.org/package=lubridate "Lubridate package at CRAN"
+[dplyr]: https://cran.r-project.org/package=dplyr "dplyr package at CRAN"
